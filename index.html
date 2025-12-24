@@ -1,68 +1,129 @@
 <!DOCTYPE html>
 <html lang="vi">
 <head>
-    <meta charset="UTF-8">
-    <title>Quản lý tài chính cá nhân </title>
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            background: #f4f6f8;
-            margin: 0;
-            padding: 0;
-        }
-        header {
-            background: #2c7be5;
-            color: white;
-            padding: 15px;
-            text-align: center;
-        }
-        .container {
-            max-width: 1000px;
-            margin: 20px auto;
-            background: white;
-            padding: 20px;
-            border-radius: 8px;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-        }
-        h2 { color: #2c7be5; }
-        input, select, button {
-            padding: 8px;
-            margin: 6px 0;
-            width: 100%;
-        }
-        button {
-            background: #2c7be5;
-            color: white;
-            border: none;
-            cursor: pointer;
-        }
-        button:hover { background: #1a5fc1; }
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            margin-top: 15px;
-        }
-        th, td {
-            border: 1px solid #ccc;
-            padding: 8px;
-            text-align: center;
-        }
-        .income { color: green; }
-        .expense { color: red; }
-        .actions {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 10px;
-        }
-    </style>
+<meta charset="UTF-8">
+<title>Quản lý tài chính cá nhân</title>
+
+<!-- BẮT BUỘC cho mobile -->
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<style>
+:root{
+    --primary:#2c7be5;
+}
+
+*{
+    box-sizing: border-box;
+}
+
+body{
+    font-family: Arial, sans-serif;
+    background:#f4f6f8;
+    margin:0;
+}
+
+header{
+    background:var(--primary);
+    color:#fff;
+    padding:1rem;
+    text-align:center;
+}
+
+.container{
+    max-width:1000px;
+    margin:1rem auto;
+    background:#fff;
+    padding:1rem;
+    border-radius:8px;
+    box-shadow:0 2px 8px rgba(0,0,0,0.1);
+}
+
+h2{
+    color:var(--primary);
+    margin-top:1.5rem;
+}
+
+input, select, button{
+    width:100%;
+    padding:0.6rem;
+    margin-top:0.5rem;
+    font-size:1rem;
+}
+
+button{
+    background:var(--primary);
+    color:white;
+    border:none;
+    border-radius:5px;
+    cursor:pointer;
+}
+
+button:hover{
+    background:#1a5fc1;
+}
+
+/* ===== FORM GRID ===== */
+.form-grid{
+    display:grid;
+    grid-template-columns:repeat(2,1fr);
+    gap:10px;
+}
+
+/* ===== TABLE ===== */
+.table-wrapper{
+    overflow-x:auto;
+}
+
+table{
+    width:100%;
+    border-collapse:collapse;
+    min-width:600px;
+}
+
+th, td{
+    border:1px solid #ccc;
+    padding:0.5rem;
+    text-align:center;
+}
+
+.income{color:green;}
+.expense{color:red;}
+
+/* ===== ACTION BUTTONS ===== */
+.actions{
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:10px;
+}
+
+/* ===== MOBILE ===== */
+@media (max-width:768px){
+    .form-grid{
+        grid-template-columns:1fr;
+    }
+
+    header h1{
+        font-size:1.2rem;
+    }
+
+    table{
+        font-size:0.9rem;
+    }
+}
+</style>
 </head>
+
 <body>
+
 <header>
     <h1>Website Quản Lý Tài Chính Cá Nhân</h1>
 </header>
 
 <div class="container">
-    <h2>Thêm khoản thu / chi</h2>
+
+<h2>Thêm khoản thu / chi</h2>
+
+<div class="form-grid">
     <input type="text" id="desc" placeholder="Mô tả">
     <input type="number" id="amount" placeholder="Số tiền">
     <select id="type">
@@ -76,104 +137,102 @@
         <option>Đi lại</option>
         <option>Khác</option>
     </select>
-    <button onclick="addTransaction()">Thêm giao dịch</button>
+</div>
 
-    <h2>Danh sách giao dịch</h2>
-    <table>
-        <thead>
-            <tr>
-                <th>Mô tả</th>
-                <th>Số tiền</th>
-                <th>Loại</th>
-                <th>Nhóm</th>
-                <th>Thời gian</th>
-            </tr>
-        </thead>
-        <tbody id="transactions"></tbody>
-    </table>
+<button onclick="addTransaction()">➕ Thêm giao dịch</button>
 
-    <h2>Tổng quan tài chính</h2>
-    <p>Tổng thu: <span class="income" id="totalIncome">0</span></p>
-    <p>Tổng chi: <span class="expense" id="totalExpense">0</span></p>
-    <p>Số dư: <strong id="balance">0</strong></p>
+<h2>Danh sách giao dịch</h2>
+<div class="table-wrapper">
+<table>
+<thead>
+<tr>
+    <th>Mô tả</th>
+    <th>Số tiền</th>
+    <th>Loại</th>
+    <th>Nhóm</th>
+    <th>Thời gian</th>
+</tr>
+</thead>
+<tbody id="transactions"></tbody>
+</table>
+</div>
 
-    <h2>Lưu & Tải dữ liệu</h2>
-    <div class="actions">
-        <button onclick="exportExcel()">📥 Tải xuống file Excel</button>
-        <input type="file" id="fileInput" accept=".csv" onchange="importExcel()">
-    </div>
+<h2>Tổng quan tài chính</h2>
+<p>Tổng thu: <span class="income" id="totalIncome">0</span></p>
+<p>Tổng chi: <span class="expense" id="totalExpense">0</span></p>
+<p>Số dư: <strong id="balance">0</strong></p>
+
+<h2>Lưu & Tải dữ liệu</h2>
+<div class="actions">
+    <button onclick="exportExcel()">📥 Tải CSV</button>
+    <input type="file" id="fileInput" accept=".csv" onchange="importExcel()">
+</div>
+
 </div>
 
 <script>
-    let data = [];
+let data=[];
 
-    function addTransaction() {
-        const t = {
-            desc: desc.value,
-            amount: Number(amount.value),
-            type: type.value,
-            category: category.value,
-            time: new Date().toLocaleString()
-        };
-        if (!t.desc || !t.amount) return alert('Vui lòng nhập đầy đủ thông tin');
-        data.push(t);
+function addTransaction(){
+    const t={
+        desc:desc.value,
+        amount:Number(amount.value),
+        type:type.value,
+        category:category.value,
+        time:new Date().toLocaleString()
+    };
+    if(!t.desc||!t.amount) return alert("Nhập đủ thông tin");
+    data.push(t);
+    render();
+}
+
+function render(){
+    let income=0,expense=0;
+    transactions.innerHTML="";
+    data.forEach(t=>{
+        t.type==="income"?income+=t.amount:expense+=t.amount;
+        transactions.innerHTML+=`
+        <tr>
+            <td>${t.desc}</td>
+            <td>${t.amount}</td>
+            <td class="${t.type}">${t.type}</td>
+            <td>${t.category}</td>
+            <td>${t.time}</td>
+        </tr>`;
+    });
+    totalIncome.innerText=income;
+    totalExpense.innerText=expense;
+    balance.innerText=income-expense;
+}
+
+function exportExcel(){
+    let csv="Mô tả,Số tiền,Loại,Nhóm,Thời gian\n";
+    data.forEach(t=>{
+        csv+=`${t.desc},${t.amount},${t.type},${t.category},${t.time}\n`;
+    });
+    const blob=new Blob([csv],{type:"text/csv"});
+    const a=document.createElement("a");
+    a.href=URL.createObjectURL(blob);
+    a.download="quan_ly_tai_chinh.csv";
+    a.click();
+}
+
+function importExcel(){
+    const file=fileInput.files[0];
+    if(!file) return;
+    const reader=new FileReader();
+    reader.onload=e=>{
+        data=[];
+        e.target.result.split("\n").slice(1).forEach(l=>{
+            if(!l.trim()) return;
+            const [desc,amount,type,category,time]=l.split(",");
+            data.push({desc,amount:Number(amount),type,category,time});
+        });
         render();
-    }
-
-    function render() {
-        let income = 0, expense = 0;
-        transactions.innerHTML = '';
-        data.forEach(t => {
-            if (t.type === 'income') income += t.amount;
-            else expense += t.amount;
-            transactions.innerHTML += `
-                <tr>
-                    <td>${t.desc}</td>
-                    <td>${t.amount}</td>
-                    <td class="${t.type}">${t.type}</td>
-                    <td>${t.category}</td>
-                    <td>${t.time}</td>
-                </tr>`;
-        });
-        totalIncome.innerText = income;
-        totalExpense.innerText = expense;
-        balance.innerText = income - expense;
-    }
-
-    function exportExcel() {
-        let csv = "Mô tả,Số tiền,Loại,Nhóm,Thời gian\n";
-        data.forEach(t => {
-            csv += `${t.desc},${t.amount},${t.type},${t.category},${t.time}\n`;
-        });
-        const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
-        const link = document.createElement('a');
-        link.href = URL.createObjectURL(blob);
-        link.download = 'quan_ly_tai_chinh.csv';
-        link.click();
-    }
-
-    function importExcel() {
-        const file = fileInput.files[0];
-        if (!file) return;
-        const reader = new FileReader();
-        reader.onload = function(e) {
-            const lines = e.target.result.split('\n').slice(1);
-            data = [];
-            lines.forEach(line => {
-                if (!line.trim()) return;
-                const [desc, amount, type, category, time] = line.split(',');
-                data.push({
-                    desc,
-                    amount: Number(amount),
-                    type,
-                    category,
-                    time
-                });
-            });
-            render();
-        };
-        reader.readAsText(file);
-    }
+    };
+    reader.readAsText(file);
+}
 </script>
+
 </body>
 </html>
