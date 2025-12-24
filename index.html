@@ -232,6 +232,288 @@ function importExcel(){
     };
     reader.readAsText(file);
 }
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<title>Quản lý tài chính cá nhân</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<style>
+:root{
+    --primary:#2c7be5;
+    --bg:#f4f6f8;
+}
+
+*{box-sizing:border-box}
+
+body{
+    margin:0;
+    font-family:Arial, sans-serif;
+    background:var(--bg);
+}
+
+header{
+    background:var(--primary);
+    color:#fff;
+    padding:1rem;
+    text-align:center;
+}
+
+nav{
+    display:flex;
+    flex-wrap:wrap;
+    background:#fff;
+    box-shadow:0 2px 5px rgba(0,0,0,.1);
+}
+
+nav button{
+    flex:1;
+    border:none;
+    background:none;
+    padding:0.8rem;
+    cursor:pointer;
+    font-weight:bold;
+}
+
+nav button.active{
+    background:var(--primary);
+    color:white;
+}
+
+.container{
+    max-width:1100px;
+    margin:1rem auto;
+    background:#fff;
+    padding:1rem;
+    border-radius:8px;
+}
+
+h2{color:var(--primary)}
+
+input,select,button{
+    width:100%;
+    padding:0.6rem;
+    margin-top:0.4rem;
+}
+
+button{
+    background:var(--primary);
+    color:white;
+    border:none;
+    border-radius:5px;
+    cursor:pointer;
+}
+
+.form-grid{
+    display:grid;
+    grid-template-columns:repeat(2,1fr);
+    gap:10px;
+}
+
+.table-wrapper{overflow-x:auto}
+
+table{
+    width:100%;
+    border-collapse:collapse;
+    margin-top:1rem;
+}
+
+th,td{
+    border:1px solid #ccc;
+    padding:0.5rem;
+    text-align:center;
+}
+
+.income{color:green}
+.expense{color:red}
+
+.hidden{display:none}
+
+@media(max-width:768px){
+    .form-grid{grid-template-columns:1fr}
+}
+</style>
+</head>
+
+<body>
+
+<header>
+    <h1>Website Quản Lý Tài Chính Cá Nhân</h1>
+</header>
+
+<nav>
+    <button onclick="show('dashboard')" class="active">🏠 Tổng quan</button>
+    <button onclick="show('transaction')">💸 Thu / Chi</button>
+    <button onclick="show('category')">📂 Danh mục</button>
+    <button onclick="show('budget')">🎯 Ngân sách</button>
+    <button onclick="show('report')">📊 Báo cáo</button>
+    <button onclick="show('setting')">⚙️ Cài đặt</button>
+</nav>
+
+<div class="container">
+
+<!-- DASHBOARD -->
+<section id="dashboard">
+    <h2>Tổng quan tài chính</h2>
+    <p>Tổng thu: <span class="income" id="totalIncome">0</span></p>
+    <p>Tổng chi: <span class="expense" id="totalExpense">0</span></p>
+    <p>Số dư: <strong id="balance">0</strong></p>
+</section>
+
+<!-- TRANSACTION -->
+<section id="transaction" class="hidden">
+    <h2>Thêm giao dịch</h2>
+    <div class="form-grid">
+        <input id="desc" placeholder="Mô tả">
+        <input id="amount" type="number" placeholder="Số tiền">
+        <select id="type">
+            <option value="income">Thu nhập</option>
+            <option value="expense">Chi tiêu</option>
+        </select>
+        <select id="category"></select>
+    </div>
+    <button onclick="addTransaction()">➕ Thêm</button>
+
+    <div class="table-wrapper">
+        <table>
+            <thead>
+                <tr>
+                    <th>Mô tả</th><th>Số tiền</th><th>Loại</th><th>Nhóm</th><th>Thời gian</th>
+                </tr>
+            </thead>
+            <tbody id="transactions"></tbody>
+        </table>
+    </div>
+</section>
+
+<!-- CATEGORY -->
+<section id="category" class="hidden">
+    <h2>Danh mục</h2>
+    <input id="newCategory" placeholder="Tên danh mục mới">
+    <button onclick="addCategory()">➕ Thêm danh mục</button>
+    <ul id="categoryList"></ul>
+</section>
+
+<!-- BUDGET -->
+<section id="budget" class="hidden">
+    <h2>Ngân sách</h2>
+    <select id="budgetCategory"></select>
+    <input id="budgetAmount" type="number" placeholder="Số tiền tối đa">
+    <button onclick="setBudget()">💾 Lưu ngân sách</button>
+    <ul id="budgetList"></ul>
+</section>
+
+<!-- REPORT -->
+<section id="report" class="hidden">
+    <h2>Báo cáo</h2>
+    <button onclick="exportCSV()">📥 Xuất CSV</button>
+</section>
+
+<!-- SETTING -->
+<section id="setting" class="hidden">
+    <h2>Cài đặt</h2>
+    <button onclick="clearData()">🗑️ Xóa toàn bộ dữ liệu</button>
+</section>
+
+</div>
+
+
+let data=JSON.parse(localStorage.getItem("data"))||[];
+let categories=JSON.parse(localStorage.getItem("categories"))||["Ăn uống","Học tập","Giải trí"];
+let budgets=JSON.parse(localStorage.getItem("budgets"))||{};
+
+function save(){
+    localStorage.setItem("data",JSON.stringify(data));
+    localStorage.setItem("categories",JSON.stringify(categories));
+    localStorage.setItem("budgets",JSON.stringify(budgets));
+}
+
+function show(id){
+    document.querySelectorAll("section").forEach(s=>s.classList.add("hidden"));
+    document.getElementById(id).classList.remove("hidden");
+    document.querySelectorAll("nav button").forEach(b=>b.classList.remove("active"));
+    event.target.classList.add("active");
+}
+
+function render(){
+    let income=0,expense=0;
+    transactions.innerHTML="";
+    data.forEach(t=>{
+        t.type==="income"?income+=t.amount:expense+=t.amount;
+        transactions.innerHTML+=`
+        <tr>
+            <td>${t.desc}</td>
+            <td>${t.amount}</td>
+            <td class="${t.type}">${t.type}</td>
+            <td>${t.category}</td>
+            <td>${t.time}</td>
+        </tr>`;
+    });
+    totalIncome.innerText=income;
+    totalExpense.innerText=expense;
+    balance.innerText=income-expense;
+    save();
+}
+
+function addTransaction(){
+    if(!desc.value||!amount.value) return alert("Nhập đủ dữ liệu");
+    data.push({
+        desc:desc.value,
+        amount:+amount.value,
+        type:type.value,
+        category:category.value,
+        time:new Date().toLocaleString()
+    });
+    render();
+}
+
+function loadCategories(){
+    category.innerHTML="";
+    budgetCategory.innerHTML="";
+    categoryList.innerHTML="";
+    categories.forEach(c=>{
+        category.innerHTML+=`<option>${c}</option>`;
+        budgetCategory.innerHTML+=`<option>${c}</option>`;
+        categoryList.innerHTML+=`<li>${c}</li>`;
+    });
+}
+
+function addCategory(){
+    categories.push(newCategory.value);
+    newCategory.value="";
+    loadCategories();
+    save();
+}
+
+function setBudget(){
+    budgets[budgetCategory.value]=+budgetAmount.value;
+    budgetList.innerHTML="";
+    for(let c in budgets){
+        budgetList.innerHTML+=`<li>${c}: ${budgets[c]}</li>`;
+    }
+    save();
+}
+
+function exportCSV(){
+    let csv="Mô tả,Số tiền,Loại,Nhóm,Thời gian\n";
+    data.forEach(t=>csv+=`${t.desc},${t.amount},${t.type},${t.category},${t.time}\n`);
+    let a=document.createElement("a");
+    a.href=URL.createObjectURL(new Blob([csv]));
+    a.download="tai_chinh.csv";
+    a.click();
+}
+
+function clearData(){
+    if(confirm("Xóa hết dữ liệu?")){
+        localStorage.clear();
+        location.reload();
+    }
+}
+
+loadCategories();
+render();
+
+
 </script>
 
 </body>
